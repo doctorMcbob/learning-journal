@@ -1,0 +1,54 @@
+/*****************************
+HEADER
+******************************/
+
+header {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    padding: 10px 10px 10px 10px;
+}
+
+h1 {
+    font-size: 2em;
+    font-weight: normal;
+}
+
+
+/*****************************
+SECTION
+******************************/
+
+section {
+    position: absolute;
+    top: 100px;
+    padding: 20px 20px;
+}
+
+/*****************************
+FOOTER
+******************************/
+
+footer {
+    position: fixed;
+    width: 100%;
+    padding: 10px 10px 10px 10px;
+    bottom: 0;
+    left: 0;
+}
+
+
+/*****************************
+COLOR
+******************************/
+
+body{
+    background: #eee;
+}
+header, footer{
+    background: #93f;
+}
+a, a:visited {
+    color: #000;
+}
