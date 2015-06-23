@@ -12,7 +12,7 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 DATABASE_URL = os.environ.get(
     'DATABASE_URL',
-    'postgresql://postgres:password@localhost:5432/learning-journal'
+    'postgresql://wesleywooten@localhost:5432/learning-journal'
 )
 
 
