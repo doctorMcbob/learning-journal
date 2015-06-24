@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ayy lmao</title>
+</head>
+<body>
+<h1>ayy lmao</h1>
+<p>ayy lmao</p>
+<p>{{ foo }}</p>
+<ul>
+
+{% for thing in stuff %}
+   <li>{{ thing }}</li>
+{% endfor %}
+</ul>
+</body>
+</html>

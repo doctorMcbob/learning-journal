@@ -1,0 +1,14 @@
+{% extends "skeleton.jinja2" %}
+{% block foobar %}
+<p>ayy lmao</p>
+<p>{{ foo }}</p>
+
+<a href="{{ request.route_url('other', special_val='ayy lmao') }}">ayy lmao</a>
+
+<ul>
+
+{% for thing in stuff %}
+   <li>{{ thing }}</li>
+{% endfor %}
+</ul>
+{% endblock %}
