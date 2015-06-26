@@ -135,9 +135,12 @@ def test_post_to_add_view(app):
     response = app.post('/add', params=entry_data, status='3*')
     redirected = response.follow()
     actual = redirected.body
-    for expected in entry_data.values():
-        assert expected in actual
-
+    
+    assert entry_data["title"] in actual
+    #I changed this to only test title
+    #because i no longer display entry
+    #text on home screen. just titles.                                      
+    
 def test_add_no_params(app):
     response = app.post('/add', status=500)
     assert 'IntegrityError' in response.body
@@ -204,8 +207,10 @@ def test_do_login_missing_params(auth_req):
         with pytest.raises(ValueError):
             do_login(auth_req)
 
-INPUT_BTN = '<input type="submit" value="Share" name="Share"/>'
-
+INPUT_BTN = '<a href="new">' 
+#I changed this from the input button to the link to the "new" page 
+#because the input button no longer exists on home, but the link to 
+#create new only appears if logged in
 
 def login_helper(username, password, app):
     """encapsulate app login for reuse in tests
@@ -230,6 +235,7 @@ def test_login_success(app):
     assert response.status_code == 200
     actual = response.body
     assert INPUT_BTN in actual
+    
 
 
 def test_login_fails(app):

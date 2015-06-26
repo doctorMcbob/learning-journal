@@ -1,5 +1,6 @@
 {% extends "base.jinja2" %}
 {% block body %}
+   {% if entries %}
    <ul>
 	{% for entry in entries %}
 	<li>
@@ -10,12 +11,15 @@
 	</li>
 	{% endfor %}
    </ul>	
+   {% else %}
+   <p>No entries here so far</p>
+   {% endif %}
 {% endblock %}
 {% block nav %}
    <ul>
 	 <li><a href="/">Home</a></li>
 	 {% if request.authenticated_userid %}   
-	 <li><a href="">new</a></li>
+	 <li><a href="new">new</a></li>
 	 <li><a href="logout">log out</a></li>
 	 {% else %}
 	 <li><a href="login">log in</a></li>
