@@ -5,7 +5,7 @@
       	    <label for="title">Title</label> <br>
     	    <input type="text" size="30" name="title" value="{{ entry.title }}" id="title"/><br>
 	    <label for="text">Text</label><br>
-	    <textarea name="text" value="{{ entry.text }}" id="text" rows="5" cols="80"></textarea><br>
+	    <textarea name="text" id="text" rows="5" cols="80">{{ entry.text }}</textarea><br>
       	    <input type="submit" value="Edit" name="edit"/>
    {% else %}
       <p>Please <a href="/login">log in</a> to edit journal entries</p>
