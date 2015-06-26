@@ -10,29 +10,18 @@
   </head>
   <body>
     <header>
+      <h1>Learning Journal</h1>
       <aside id="user-controls">
-	<ul>
-	  {% if not request.authenticated_userid %}
-	  <li><a href="{{ request.route_url('login') }}">log in</a></li>
-	  {% else %}
-	  <li><a href="{{ request.route_url('logout') }}">log out</a></li>
-	  {% endif %}
 	</ul>
       </aside>
-      <nav>
-        <ul>
-          <li><a href="/">Home</a></li>
-        </ul>
-      </nav>
     </header>
     <main>
-      <h1>My Python Journal</h1>
       <section id="content">
-      {% block body %}{% endblock %}
+	{% block body %}{% endblock %}
       </section>
     </main>
     <footer>
-      <p>Created in the Code Fellows Python Dev Accelerator</p>
+    {% block nav %}{% endblock %}
     </footer>
   </body>
 </html>
