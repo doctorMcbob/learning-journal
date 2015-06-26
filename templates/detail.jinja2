@@ -1,0 +1,18 @@
+{% extends "base.jinja2" %}
+{% block body %}
+   <h2>{{ entry.title }}</h2>
+   <h3>{{ entry.created.strftime('%b. %d, %Y') }}</h3>
+   <p>{{ entry.text }}</p>
+{% endblock %}
+{% block nav %}
+  <ul>
+	 <li><a href="/">Home</a></li>
+	 {% if request.authenticated_userid %}   
+	 <li><a href="">new</a></li>
+	 <li><a href="/edit/{{ entry.id }}">edit</a></li>	
+	 <li><a href="/logout">log out</a></li>
+	 {% else %}
+	 <li><a href="/login">log in</a></li>
+   	 {% endif %}
+   </ul>
+{% endblock %}

@@ -96,16 +96,39 @@ def init_db():
     engine = create_engine(DATABASE_URL)
     Base.metadata.create_all(engine)
 
-@view_config(route_name='home', renderer='templates/list.jinja2')
+@view_config(route_name='home', renderer='templates/index.jinja2')
 def home(request):
     #import pdb; pdb.set_trace()
     return {"entries":Entry.all()}
 
-@view_config(route_name="other", renderer="string")
-def other(request):
-    import pdb; pdb.set_trace()
-    return request.matchdict
+@view_config(route_name="detail", renderer="templates/detail.jinja2")
+def detail(request):
+    #import pdb; pdb.set_trace()
+    entries = Entry.all()
+    entry = entries[::-1][int(request.matchdict["entryID"])-1]
+    return {"entry":entry}
 
+@view_config(route_name="edit", renderer="templates/edit.jinja2")
+def edit(request):
+    #import pdb; pdb.set_trace()
+    entries = Entry.all()
+    entry = entries[::-1][int(request.matchdict["entryID"])-1]
+    return {"entry":entry}
+
+@view_config(route_name="edit_entry",request_method='POST')
+def edit_entry(request):
+    #import pdb; pdb.set_trace()
+    entry = Entry.all()[::-1][int(request.matchdict["entryID"])-1]
+    entry.title = request.params.get('title')
+    entry.text = request.params.get('text')
+    DBSession.flush()
+    return HTTPFound(request.route_url('detail', entryID = entry.id))
+
+@view_config(route_name="new", renderer="templates/new.jinja2")
+def new(request):
+    
+    return {} 
+    
 def do_login(request):
     username = request.params.get('username', None)
     password = request.params.get('password', None)
@@ -147,7 +170,10 @@ def main():
     config.add_static_view('static', os.path.join(HERE, 'static'))
     config.add_route('home', '/')
     config.add_route('add', '/add')
-    config.add_route('other', '/ayylmao/{special_val}')
+    config.add_route('new', '/new')
+    config.add_route('edit_entry', '/edit_entry/{entryID}')
+    config.add_route('detail', '/detail/{entryID}')
+    config.add_route('edit', '/edit/{entryID}')
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
     config.scan()
