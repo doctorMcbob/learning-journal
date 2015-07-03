@@ -5,22 +5,22 @@
       	    <label for="title">Title</label> <br>
     	    <input type="text" size="30" name="title" value="{{ entry.title }}" id="title"/><br>
 	    <label for="text">Text</label><br>
-	    <textarea name="text" id="text" rows="5" cols="80">{{ entry.text }}</textarea><br>
+	    <textarea name="text" id="text" rows="18" cols="180">{{ entry.text }}</textarea><br>
       	    <input type="submit" value="Edit" name="edit"/>
    {% else %}
       <p>Please <a href="/login">log in</a> to edit journal entries</p>
    {% endif %}
 {% endblock %}
 {% block nav %}
-  <ul>
-	 <li><a href="/">Home</a></li>
+   <div>
+	 <a href="/">Home</a>
 	 {% if request.authenticated_userid %}   
-	 <li><a href="/new">new</a></li>
-	 <li><a href="/logout">log out</a></li>
+	  | <a href="/new">new</a></li>
+	  | <a href="/logout">log out</a></li>
 	 {% else %}
-	 <li><a href="/login">log in</a></li>
+	  | <a href="/login">log in</a></li>
    	 {% endif %}
-   </ul>
+   </div>   
 {% endblock %}
 
 

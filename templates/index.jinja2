@@ -16,13 +16,13 @@
    {% endif %}
 {% endblock %}
 {% block nav %}
-   <ul>
-	 <li><a href="/">Home</a></li>
+   <div>
+	 <a href="/">Home</a>
 	 {% if request.authenticated_userid %}   
-	 <li><a href="new">new</a></li>
-	 <li><a href="logout">log out</a></li>
+	  | <a href="/new">new</a></li>
+	  | <a href="/logout">log out</a></li>
 	 {% else %}
-	 <li><a href="login">log in</a></li>
+	  | <a href="/login">log in</a></li>
    	 {% endif %}
-   </ul>
+   </div>   
 {% endblock %}
