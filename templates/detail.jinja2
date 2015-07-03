@@ -2,17 +2,17 @@
 {% block body %}
    <h2>{{ entry.title }}</h2>
    <h3>{{ entry.created.strftime('%b. %d, %Y') }}</h3>
-   <p>{{ entry.text }}</p>
+   {{ text|safe }}
 {% endblock %}
 {% block nav %}
-  <ul>
-	 <li><a href="/">Home</a></li>
+   <div>
+	 <a href="/">Home</a>
 	 {% if request.authenticated_userid %}   
-	 <li><a href="/new">new</a></li>
-	 <li><a href="/edit/{{ entry.id }}">edit</a></li>	
-	 <li><a href="/logout">log out</a></li>
+	  | <a href="/new">new</a></li>
+	  | <a href="/edit/{{ entry.id }}">edit</a>	
+	  | <a href="/logout">log out</a></li>
 	 {% else %}
-	 <li><a href="/login">log in</a></li>
+	  | <a href="/login">log in</a></li>
    	 {% endif %}
-   </ul>
+   </div>
 {% endblock %}

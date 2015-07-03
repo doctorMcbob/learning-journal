@@ -17,6 +17,8 @@ from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from cryptacular.bcrypt import BCRYPTPasswordManager
 from pyramid.security import remember, forget
+from markdown import markdown
+
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
@@ -72,6 +74,7 @@ def login(request):
 
     return {'error': error, 'username': username}
 
+
 @view_config(route_name='logout')
 def logout(request):
     headers = forget(request)
@@ -85,6 +88,7 @@ def add_entry(request):
     Entry.write(title=title, text=text)
     return HTTPFound(request.route_url('home'))
 
+
 @view_config(context=DBAPIError)
 def db_exception(context, request):
     from pyramid.response import Response
@@ -92,28 +96,36 @@ def db_exception(context, request):
     response.status_int = 500
     return response
 
+
 def init_db():
     engine = create_engine(DATABASE_URL)
     Base.metadata.create_all(engine)
+
 
 @view_config(route_name='home', renderer='templates/index.jinja2')
 def home(request):
     #import pdb; pdb.set_trace()
     return {"entries":Entry.all()}
 
+
 @view_config(route_name="detail", renderer="templates/detail.jinja2")
 def detail(request):
     #import pdb; pdb.set_trace()
     entries = Entry.all()
     entry = entries[::-1][int(request.matchdict["entryID"])-1]
-    return {"entry":entry}
+    print entry.text
+    return {"entry":entry,
+            "text":markdown(entry.text, extensions=['codehilite', 
+                                                  'fenced_code'])}
 
+            
 @view_config(route_name="edit", renderer="templates/edit.jinja2")
 def edit(request):
     #import pdb; pdb.set_trace()
     entries = Entry.all()
     entry = entries[::-1][int(request.matchdict["entryID"])-1]
     return {"entry":entry}
+
 
 @view_config(route_name="edit_entry",request_method='POST')
 def edit_entry(request):
@@ -124,11 +136,12 @@ def edit_entry(request):
     DBSession.flush()
     return HTTPFound(request.route_url('detail', entryID = entry.id))
 
+
 @view_config(route_name="new", renderer="templates/new.jinja2")
 def new(request):
-    
     return {} 
-    
+
+
 def do_login(request):
     username = request.params.get('username', None)
     password = request.params.get('password', None)
@@ -140,6 +153,7 @@ def do_login(request):
     if username == settings.get('auth.username', ''):
         hashed = settings.get('auth.password', '')
         return manager.check(hashed, password)
+
     
 def main():
     """Create a configured wsgi app"""
