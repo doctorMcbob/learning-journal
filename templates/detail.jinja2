@@ -7,9 +7,9 @@
 {% block nav %}
    <div>
 	 <a href="/">Home</a>
-	 {% if request.authenticated_userid %}   
+	 {% if request.authenticated_userid %}
 	  | <a href="/new">new</a></li>
-	  | <a href="/edit/{{ entry.id }}">edit</a>	
+	  | <a href="/edit/{{ entry.id }}">edit</a>
 	  | <a href="/logout">log out</a></li>
 	 {% else %}
 	  | <a href="/login">log in</a></li>
