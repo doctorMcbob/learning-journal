@@ -10,7 +10,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 from zope.sqlalchemy import ZopeTransactionExtension
-from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPFound
 from sqlalchemy.exc import DBAPIError
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -39,6 +38,12 @@ class Entry(Base):
         sa.DateTime, nullable=False, default=datetime.datetime.utcnow)
 
     @classmethod
+    def get_entry_by_id(cls, entry_id, session=None):
+        if session is None:
+            session = DBSession
+        return session.query(cls).filter(cls.id == entry_id).one()
+
+    @classmethod
     def write(cls, title=None, text=None, session=None):
         if title == "":
             raise ValueError()
@@ -50,7 +55,7 @@ class Entry(Base):
 
     @classmethod
     def all(cls, session=None):
-        if session == None:
+        if session is None:
             session = DBSession
         return session.query(cls).order_by(cls.created.desc()).all()
 
@@ -111,7 +116,6 @@ def home(request):
 def detail(request):
     entries = Entry.all()
     entry = entries[::-1][int(request.matchdict["entryID"]) - 1]
-    print entry.text
     return {"entry": entry,
             "text": markdown(entry.text, extensions=['codehilite',
                                                      'fenced_code'])}
@@ -126,7 +130,7 @@ def edit(request):
 
 @view_config(route_name="edit_entry", request_method='POST')
 def edit_entry(request):
-    entry = Entry.all()[::-1][int(request.matchdict["entryID"]) - 1]
+    entry = Entry.get_entry_by_id(request.matchdict["entryID"])
     entry.title = request.params.get('title')
     entry.text = request.params.get('text')
     DBSession.flush()
