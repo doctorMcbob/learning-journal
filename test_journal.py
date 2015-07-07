@@ -217,7 +217,7 @@ def test_do_login_missing_params(auth_req):
         with pytest.raises(ValueError):
             do_login(auth_req)
 
-INPUT_BTN = '<a href="new">'
+INPUT_BTN = '<a href="/new">'
 # I changed this from the input button to the link to the "new" page
 # because the input button no longer exists on home, but the link to
 # create new only appears if logged in

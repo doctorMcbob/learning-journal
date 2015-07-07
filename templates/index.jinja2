@@ -10,7 +10,7 @@
 	   </a>
 	</li>
 	{% endfor %}
-   </ul>	
+   </ul>
    {% else %}
    <p>No entries here so far</p>
    {% endif %}
@@ -18,11 +18,11 @@
 {% block nav %}
    <div>
 	 <a href="/">Home</a>
-	 {% if request.authenticated_userid %}   
+	 {% if request.authenticated_userid %}
 	  | <a href="/new">new</a></li>
 	  | <a href="/logout">log out</a></li>
 	 {% else %}
 	  | <a href="/login">log in</a></li>
    	 {% endif %}
-   </div>   
+   </div>
 {% endblock %}
