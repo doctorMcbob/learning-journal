@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import journal
 import os
 import pytest
 from sqlalchemy import create_engine
@@ -15,12 +16,14 @@ TEST_DATABASE_URL = os.environ.get(
 os.environ['DATABASE_URL'] = TEST_DATABASE_URL
 os.environ['TESTING'] = "True"
 
+
 @pytest.fixture()
 def app():
     from journal import main
     from webtest import TestApp
     app = main()
     return TestApp(app)
+
 
 @pytest.fixture(scope='session')
 def connection(request):
@@ -33,6 +36,7 @@ def connection(request):
     request.addfinalizer(journal.Base.metadata.drop_all)
     return connection
 
+
 @pytest.fixture()
 def db_session(request, connection):
     from transaction import abort
@@ -44,7 +48,6 @@ def db_session(request, connection):
     return DBSession
 
 
-
 def test_write_entry(db_session):
     kwargs = {'title': "Test Title", 'text': "Test entry text"}
     kwargs['session'] = db_session
@@ -53,7 +56,6 @@ def test_write_entry(db_session):
     # now, create an entry using the 'write' class method
     entry = journal.Entry.write(**kwargs)
 
-
     # ... <- keep all the existing test content, just add the stuff below
     # the entry we get back ought to be an instance of Entry
     assert isinstance(entry, journal.Entry)
@@ -61,7 +63,6 @@ def test_write_entry(db_session):
     # the database
     for field in ['id', 'created']:
         assert getattr(entry, field, None) is None
-    
     # flush the session to "write" the data to the database
     db_session.flush()
     # now, we should have one entry:
@@ -73,18 +74,21 @@ def test_write_entry(db_session):
     for auto in ['id', 'created']:
         assert getattr(entry, auto, None) is not None
 
+
 def test_duplicate_title(db_session):
-    journal.Entry.write(session=db_session, **{"title":"exist", "text":"asdfsadfasdf"})
-    journal.Entry.write(session=db_session, **{"title":"exist", "text":"asdffwerwwee"})
+    journal.Entry.write(session=db_session, **{"title": "exist",
+                                               "text": "asdfsadfasdf"})
+    journal.Entry.write(session=db_session, **{"title": "exist",
+                                               "text": "asdffwerwwee"})
     with pytest.raises(IntegrityError):
         db_session.flush()
 
+
 def test_empty_title(db_session):
-    bad_data = {"title":"", "text":"Test Text"}
+    bad_data = {"title": "", "text": "Test Text"}
     with pytest.raises(ValueError):
         journal.Entry.write(session=db_session, **bad_data)
-    
-        
+
 
 def test_entry_no_title_fails(db_session):
     bad_data = {'text': 'test text'}
@@ -92,11 +96,13 @@ def test_entry_no_title_fails(db_session):
     with pytest.raises(IntegrityError):
         db_session.flush()
 
+
 def test_entry_no_text_fails(db_session):
     bad_data = {'title': 'test title'}
     journal.Entry.write(session=db_session, **bad_data)
     with pytest.raises(IntegrityError):
         db_session.flush()
+
 
 def test_read_entries_empty(db_session):
     entries = journal.Entry.all()
@@ -127,6 +133,7 @@ def test_empty_listing(app):
     expected = 'No entries here so far'
     assert expected in actual
 
+
 def test_post_to_add_view(app):
     entry_data = {
         'title': 'Hello there',
@@ -135,15 +142,16 @@ def test_post_to_add_view(app):
     response = app.post('/add', params=entry_data, status='3*')
     redirected = response.follow()
     actual = redirected.body
-    
     assert entry_data["title"] in actual
-    #I changed this to only test title
-    #because i no longer display entry
-    #text on home screen. just titles.                                      
-    
+    # I changed this to only test title
+    # because i no longer display entry
+    # text on home screen. just titles.
+
+
 def test_add_no_params(app):
     response = app.post('/add', status=500)
     assert 'IntegrityError' in response.body
+
 
 @pytest.fixture()
 def entry(db_session):
@@ -155,6 +163,7 @@ def entry(db_session):
     db_session.flush()
     return entry
 
+
 @pytest.fixture()
 def test_listing(app, entry):
     response = app.get('/')
@@ -163,6 +172,7 @@ def test_listing(app, entry):
     for field in ['title', 'text']:
         expected = getattr(entry, field, 'absent')
         assert expected in actual
+
 
 @pytest.fixture(scope='function')
 def auth_req(request):
@@ -207,10 +217,11 @@ def test_do_login_missing_params(auth_req):
         with pytest.raises(ValueError):
             do_login(auth_req)
 
-INPUT_BTN = '<a href="new">' 
-#I changed this from the input button to the link to the "new" page 
-#because the input button no longer exists on home, but the link to 
-#create new only appears if logged in
+INPUT_BTN = '<a href="/new">'
+# I changed this from the input button to the link to the "new" page
+# because the input button no longer exists on home, but the link to
+# create new only appears if logged in
+
 
 def login_helper(username, password, app):
     """encapsulate app login for reuse in tests
@@ -235,7 +246,6 @@ def test_login_success(app):
     assert response.status_code == 200
     actual = response.body
     assert INPUT_BTN in actual
-    
 
 
 def test_login_fails(app):
@@ -246,6 +256,7 @@ def test_login_fails(app):
     assert "Login Failed" in actual
     assert INPUT_BTN not in actual
 
+
 def test_logout(app):
     # re-use existing code to ensure we are logged in when we begin
     test_login_success(app)
@@ -254,7 +265,3 @@ def test_logout(app):
     assert response.status_code == 200
     actual = response.body
     assert INPUT_BTN not in actual
-
-
-import journal
-

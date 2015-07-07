@@ -10,7 +10,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 from zope.sqlalchemy import ZopeTransactionExtension
-from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPFound
 from sqlalchemy.exc import DBAPIError
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -31,12 +30,18 @@ DATABASE_URL = os.environ.get(
 
 class Entry(Base):
     __tablename__ = 'entries'
-    
+
     id = sa.Column(sa.Integer, primary_key=True)
     title = sa.Column(sa.Unicode(127), nullable=False, unique=True)
     text = sa.Column(sa.Unicode(), nullable=False)
     created = sa.Column(
         sa.DateTime, nullable=False, default=datetime.datetime.utcnow)
+
+    @classmethod
+    def get_entry_by_id(cls, entry_id, session=None):
+        if session is None:
+            session = DBSession
+        return session.query(cls).filter(cls.id == entry_id).one()
 
     @classmethod
     def write(cls, title=None, text=None, session=None):
@@ -47,10 +52,10 @@ class Entry(Base):
         instance = cls(title=title, text=text)
         session.add(instance)
         return instance
-    
+
     @classmethod
     def all(cls, session=None):
-        if session == None:
+        if session is None:
             session = DBSession
         return session.query(cls).order_by(cls.created.desc()).all()
 
@@ -104,42 +109,37 @@ def init_db():
 
 @view_config(route_name='home', renderer='templates/index.jinja2')
 def home(request):
-    #import pdb; pdb.set_trace()
-    return {"entries":Entry.all()}
+    return {"entries": Entry.all()}
 
 
 @view_config(route_name="detail", renderer="templates/detail.jinja2")
 def detail(request):
-    #import pdb; pdb.set_trace()
     entries = Entry.all()
-    entry = entries[::-1][int(request.matchdict["entryID"])-1]
-    print entry.text
-    return {"entry":entry,
-            "text":markdown(entry.text, extensions=['codehilite', 
-                                                  'fenced_code'])}
+    entry = entries[::-1][int(request.matchdict["entryID"]) - 1]
+    return {"entry": entry,
+            "text": markdown(entry.text, extensions=['codehilite',
+                                                     'fenced_code'])}
 
-            
+
 @view_config(route_name="edit", renderer="templates/edit.jinja2")
 def edit(request):
-    #import pdb; pdb.set_trace()
     entries = Entry.all()
-    entry = entries[::-1][int(request.matchdict["entryID"])-1]
-    return {"entry":entry}
+    entry = entries[::-1][int(request.matchdict["entryID"]) - 1]
+    return {"entry": entry}
 
 
-@view_config(route_name="edit_entry",request_method='POST')
+@view_config(route_name="edit_entry", request_method='POST')
 def edit_entry(request):
-    #import pdb; pdb.set_trace()
-    entry = Entry.all()[::-1][int(request.matchdict["entryID"])-1]
+    entry = Entry.get_entry_by_id(request.matchdict["entryID"])
     entry.title = request.params.get('title')
     entry.text = request.params.get('text')
     DBSession.flush()
-    return HTTPFound(request.route_url('detail', entryID = entry.id))
+    return HTTPFound(request.route_url('detail', entryID=entry.id))
 
 
 @view_config(route_name="new", renderer="templates/new.jinja2")
 def new(request):
-    return {} 
+    return {}
 
 
 def do_login(request):
@@ -154,7 +154,7 @@ def do_login(request):
         hashed = settings.get('auth.password', '')
         return manager.check(hashed, password)
 
-    
+
 def main():
     """Create a configured wsgi app"""
     settings = {}
