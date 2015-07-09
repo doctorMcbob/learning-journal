@@ -59,3 +59,32 @@ header, footer{
 a, a:visited {
     color: #000;
 }
+
+/*****************************
+DETAIL AJAX BLACK MAGIC
+******************************/
+
+#edit_container > div {
+    width: 50%;
+    position: fixed;
+    margin: 10% auto;
+    top: -15px;
+    left: 10%;
+    right: 10%;
+    padding: 20px;
+    border-style: solid;
+    border-color: #60c;
+    border-radius: 10px;
+    border-width: 3px;
+    background: #82e
+}
+
+
+
+
+
+
+
+
+
+
