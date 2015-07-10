@@ -1,4 +1,8 @@
 {% extends "base.jinja2" %}
+{% block other %}
+<link rel="canonical"
+  href="">
+{% endblock %}
 {% block body %}
     <div id="the_entry">
         <h2 id="title">{{ entry.title }}</h2>
@@ -45,5 +49,9 @@
     {% else %}
         | <a href="/login">log in</a></li>
     {% endif %}
+    | <a class="twitter-share-button"
+      href="https://twitter.com/intent/tweet?url=http%3A%2F%2Fstill-scrubland-4525.herokuapp.com%2Fdetail%2F{{ entry.id }}&text={{ entry.title }}">
+    Tweet
+    </a>
     </div>
 {% endblock %}
