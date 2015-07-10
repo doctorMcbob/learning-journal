@@ -1,23 +1,27 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import os
+import datetime
+import json
+
 from pyramid.config import Configurator
 from pyramid.view import view_config
+from pyramid.response import Response
+from pyramid.authentication import AuthTktAuthenticationPolicy
+from pyramid.authorization import ACLAuthorizationPolicy
+from pyramid.httpexceptions import HTTPFound
+from pyramid.security import remember, forget
+
+from cryptacular.bcrypt import BCRYPTPasswordManager
+from markdown import markdown
 from waitress import serve
-import datetime
+
 import sqlalchemy as sa
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 from zope.sqlalchemy import ZopeTransactionExtension
-from pyramid.httpexceptions import HTTPFound
 from sqlalchemy.exc import DBAPIError
-from pyramid.authentication import AuthTktAuthenticationPolicy
-from pyramid.authorization import ACLAuthorizationPolicy
-from cryptacular.bcrypt import BCRYPTPasswordManager
-from pyramid.security import remember, forget
-from markdown import markdown
-
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
@@ -31,7 +35,7 @@ DATABASE_URL = os.environ.get(
 class Entry(Base):
     __tablename__ = 'entries'
 
-    id = sa.Column(sa.Integer, primary_key=True)
+    id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     title = sa.Column(sa.Unicode(127), nullable=False, unique=True)
     text = sa.Column(sa.Unicode(), nullable=False)
     created = sa.Column(
@@ -51,6 +55,7 @@ class Entry(Base):
             session = DBSession
         instance = cls(title=title, text=text)
         session.add(instance)
+        session.flush()
         return instance
 
     @classmethod
@@ -58,6 +63,15 @@ class Entry(Base):
         if session is None:
             session = DBSession
         return session.query(cls).order_by(cls.created.desc()).all()
+
+    @classmethod
+    def update(cls, entry_id, title, text, session=None):
+        if session is None:
+            session = DBSession
+        entry = Entry.get_entry_by_id(entry_id, session=session)
+        entry.text = text
+        entry.title = title
+        return entry
 
 
 @view_config(route_name='login', renderer="templates/login.jinja2")
@@ -90,8 +104,8 @@ def logout(request):
 def add_entry(request):
     title = request.params.get('title')
     text = request.params.get('text')
-    Entry.write(title=title, text=text)
-    return HTTPFound(request.route_url('home'))
+    entry = Entry.write(title=title, text=text)
+    return HTTPFound(request.route_url('detail', entryID=entry.id))
 
 
 @view_config(context=DBAPIError)
@@ -114,26 +128,48 @@ def home(request):
 
 @view_config(route_name="detail", renderer="templates/detail.jinja2")
 def detail(request):
-    entries = Entry.all()
-    entry = entries[::-1][int(request.matchdict["entryID"]) - 1]
-    return {"entry": entry,
-            "text": markdown(entry.text, extensions=['codehilite',
-                                                     'fenced_code'])}
+    entry = Entry.get_entry_by_id(request.matchdict["entryID"])
+    if 'HTTP_X_REQUESTED_WITH' in request.environ:
+        return Response(body=json.dumps({
+                                        "title": entry.title,
+                                        "text": markdown(
+                                            entry.text,
+                                            extensions=['codehilite',
+                                                        'fenced_code'])
+                                        }), content_type=b'application/json')
+    return {
+        "entry": {
+            "id": entry.id,
+            "text": entry.text,
+            "created": entry.created,
+            "title": entry.title
+        },
+        "markdown_text": markdown(entry.text, extensions=['codehilite',
+                                                          'fenced_code'])
+    }
 
 
 @view_config(route_name="edit", renderer="templates/edit.jinja2")
 def edit(request):
-    entries = Entry.all()
-    entry = entries[::-1][int(request.matchdict["entryID"]) - 1]
-    return {"entry": entry}
+    entry = Entry.get_entry_by_id(request.matchdict["entryID"])
+    if 'HTTP_X_REQUESTED_WITH' in request.environ:
+        return Response(body=json.dumps({
+                                        "title": entry.title,
+                                        "text": entry.text
+                                        }), content_type=b'application/json')
+    return {"entry": {
+            "id": entry.id,
+            "text": entry.text,
+            "created": entry.created,
+            "title": entry.title}
+            }
 
 
 @view_config(route_name="edit_entry", request_method='POST')
 def edit_entry(request):
     entry = Entry.get_entry_by_id(request.matchdict["entryID"])
-    entry.title = request.params.get('title')
-    entry.text = request.params.get('text')
-    DBSession.flush()
+    entry.update(entry.id, request.params.get("title"),
+                 request.params.get("text"))
     return HTTPFound(request.route_url('detail', entryID=entry.id))
 
 
