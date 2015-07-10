@@ -1,6 +1,19 @@
 $(function() {
     $(".hide_this").hide();
 
+    $("#new").on("click", function(event){
+        event.preventDefault();
+
+        $.ajax({
+            method: "GET",
+            url: "/new"
+        }).done(function(response){
+            $("#new_container").show();
+        }).fail(function(){
+            alert("Something went wrong :c");
+        });
+    });
+
     $("#edit").on("click", function(event){
         event.preventDefault();
 
@@ -10,7 +23,6 @@ $(function() {
             method: "GET",
             url: "/edit/" + id
         }).done(function(response){
-            //$("#the_entry").hide()
             $("#edit_container").show();
             $("#new-title").val(response.title);
             $("#new-text").val(response.text);
@@ -19,13 +31,12 @@ $(function() {
         });
     });
 
-    $("submit").on("click", function(event){
+    $("#edit_submit").on("click", function(event){
         event.preventDefault();
 
-        var id = $("#entry-id");
-        var title = $("#new-title");
-        var text = $("#new-text");
-
+        var id = $("#entry-id").val();
+        var title = $("#new-title").val();
+        var text = $("#new-text").val();
         $.ajax({
             method : "POST",
             url : "/edit_entry/" + id,
@@ -35,15 +46,19 @@ $(function() {
                 text: text
             }
         }).done(function(response) {
-            //$(".journal-entry").show();
-            $("#new-title").html(response.title);
-            $("#new-text").html(response.text);
-            $("#edit-form-container").hide();
+            $("#title").html(response.title);
+            $("#markdown-text").html(response.text);
+            $("#edit_container").hide();
         }).fail(function() {
             alert("Something went wrong :c");
         });
     });
-    $("cancel").on("click", function(){
-        $("edit-form-container").hide();
+    $("#edit_cancel").on("click", function(event){
+        event.preventDefault();
+        $("#edit_container").hide();
+    })
+    $("#new_cancel").on("click", function(event){
+        event.preventDefault();
+        $("#new_container").hide();
     })
 });

@@ -14,8 +14,32 @@
     </header>
     <main>
       <section id="content">
-	{% block body %}{% endblock %}
+      	{% block body %}{% endblock %}
       </section>
+      <div class="hide_this" id="new_container">
+        <div>
+           {% if request.authenticated_userid %}
+            <form action="{{ request.route_url('add') }}" method="POST" class="add">
+              <label for="title">
+                Title
+              </label> <br>
+
+              <input type="text" size="30" name="title" id="title"/><br>
+
+              <label for="text">
+                Text
+              </label><br>
+
+              <textarea name="text" id="text"></textarea><br>
+
+              <input type="submit" value="Submit" name="edit"/>
+              <button id="new_cancel">Cancel</button>
+            </form>
+          {% else %}
+            <p>Please <a href="/login">log in</a> to add journal entries</p>
+          {% endif %}
+        </div>
+      </div>
     </main>
     <footer>
     {% block nav %}{% endblock %}

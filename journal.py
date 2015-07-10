@@ -35,7 +35,7 @@ DATABASE_URL = os.environ.get(
 class Entry(Base):
     __tablename__ = 'entries'
 
-    id = sa.Column(sa.Integer, primary_key=True)
+    id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     title = sa.Column(sa.Unicode(127), nullable=False, unique=True)
     text = sa.Column(sa.Unicode(), nullable=False)
     created = sa.Column(
@@ -55,6 +55,7 @@ class Entry(Base):
             session = DBSession
         instance = cls(title=title, text=text)
         session.add(instance)
+        session.flush()
         return instance
 
     @classmethod
@@ -70,6 +71,7 @@ class Entry(Base):
         entry = Entry.get_entry_by_id(entry_id, session=session)
         entry.text = text
         entry.title = title
+        return entry
 
 
 @view_config(route_name='login', renderer="templates/login.jinja2")
@@ -102,8 +104,8 @@ def logout(request):
 def add_entry(request):
     title = request.params.get('title')
     text = request.params.get('text')
-    Entry.write(title=title, text=text)
-    return HTTPFound(request.route_url('home'))
+    entry = Entry.write(title=title, text=text)
+    return HTTPFound(request.route_url('detail', entryID=entry.id))
 
 
 @view_config(context=DBAPIError)
@@ -127,6 +129,14 @@ def home(request):
 @view_config(route_name="detail", renderer="templates/detail.jinja2")
 def detail(request):
     entry = Entry.get_entry_by_id(request.matchdict["entryID"])
+    if 'HTTP_X_REQUESTED_WITH' in request.environ:
+        return Response(body=json.dumps({
+                                        "title": entry.title,
+                                        "text": markdown(
+                                            entry.text,
+                                            extensions=['codehilite',
+                                                        'fenced_code'])
+                                        }), content_type=b'application/json')
     return {
         "entry": {
             "id": entry.id,
